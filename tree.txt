@@ -1,0 +1,348 @@
+.
+├── DashboardGrafana.json
+├── Dockerfile
+├── LOG430-01-Labo-05
+│   ├── api
+│   │   └── controllers.py
+│   └── sgc
+│       └── service_factory.py
+├── README.md
+├── api
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── controllers.cpython-312.pyc
+│   │   └── urls.cpython-312.pyc
+│   ├── apps.py
+│   ├── authentication.py
+│   ├── controllers.py
+│   ├── manage.py
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── docker-compose.yml
+├── docs
+│   ├── ADR
+│   │   ├── ADR-01-ChoixFramework.md
+│   │   ├── ADR-02-AccesBD.md
+│   │   ├── ADR-03-AdoptionGRPC
+│   │   └── ADR-04-SeparationService.md
+│   └── UML
+│       ├── DiagrammeDeCasDUtilisations
+│       │   └── DCU.puml
+│       ├── DiagrammeDeClasses
+│       │   └── DC.puml
+│       ├── DiagrammeDeComposant
+│       │   └── DCO.puml
+│       ├── DiagrammeDeDeploiement
+│       │   └── DD.puml
+│       └── DiagrammesDeSequence
+│           ├── DS01-RechercherProduit.puml
+│           ├── DS02-EnregistrerVente.puml
+│           ├── DS03-GererRetour.puml
+│           ├── DS04-ConsulterStockEnMagasin.puml
+│           ├── DS05-ConsulterStockEnMaisonMere.puml
+│           ├── DS06-InitierDemandeApprovisionnement.puml
+│           ├── DS07-GenererRapportVente.puml
+│           └── DS08-VisualiserPerformancesMagasin 4.puml
+├── manage.py
+├── nginx
+│   └── nginx.conf
+├── out
+│   └── docs
+│       └── UML
+│           └── DiagrammeDeDeploiement
+│               └── DD
+├── prometheus.yml
+├── requirements.txt
+├── sgc
+│   ├── __pycache__
+│   │   ├── service_factory.cpython-312.pyc
+│   │   ├── settings.cpython-312.pyc
+│   │   ├── urls.cpython-312.pyc
+│   │   ├── views.cpython-312.pyc
+│   │   └── wsgi.cpython-312.pyc
+│   ├── asgi.py
+│   ├── caisse
+│   │   ├── __pycache__
+│   │   │   ├── admin.cpython-312.pyc
+│   │   │   ├── apps.cpython-312.pyc
+│   │   │   ├── urls.cpython-312.pyc
+│   │   │   └── views.cpython-312.pyc
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── services
+│   │   │   ├── __pycache__
+│   │   │   │   └── caisse_service.cpython-312.pyc
+│   │   │   └── caisse_service.py
+│   │   ├── tests.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── core
+│   │   ├── __pycache__
+│   │   │   ├── apps.cpython-312.pyc
+│   │   │   └── models.cpython-312.pyc
+│   │   ├── apps.py
+│   │   ├── middleware
+│   │   │   ├── __pycache__
+│   │   │   │   └── metrics_middleware.cpython-312.pyc
+│   │   │   └── metrics_middleware.py
+│   │   ├── models.py
+│   │   ├── repositories
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   │   └── __init__.cpython-312.pyc
+│   │   │   └── demande_appro_repository.py
+│   │   ├── scripts
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-312.pyc
+│   │   │   │   └── seed_data.cpython-312.pyc
+│   │   │   └── seed_data.py
+│   │   └── services
+│   │       ├── __pycache__
+│   │       │   └── transaction_manager.cpython-312.pyc
+│   │       ├── demande_appro_service.py
+│   │       ├── logging_service.py
+│   │       ├── rapport_service.py
+│   │       └── transaction_manager.py
+│   ├── maison_mere
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   └── apps.cpython-312.pyc
+│   │   ├── apps.py
+│   │   ├── tests.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── microservices
+│   │   ├── stock_service
+│   │   │   ├── Dockerfile
+│   │   │   ├── manage.py
+│   │   │   ├── repositories
+│   │   │   │   └── produit_repository.py
+│   │   │   ├── requirements.txt
+│   │   │   ├── scripts
+│   │   │   │   └── seed_data.py
+│   │   │   └── stock_app
+│   │   │       ├── __init__.py
+│   │   │       ├── __pycache__
+│   │   │       ├── asgi.py
+│   │   │       ├── controllers.py
+│   │   │       ├── models.py
+│   │   │       ├── settings.py
+│   │   │       ├── stock_service.py
+│   │   │       ├── urls.py
+│   │   │       └── wsgi.py
+│   │   └── vente_service
+│   │       ├── manage.py
+│   │       ├── repositories
+│   │       │   └── vente_repository.py
+│   │       └── vente_app
+│   │           ├── __init__.py
+│   │           ├── __pycache__
+│   │           ├── asgi.py
+│   │           ├── models.py
+│   │           ├── settings.py
+│   │           ├── urls.py
+│   │           ├── vente_service.py
+│   │           ├── views.py
+│   │           └── wsgi.py
+│   ├── settings.py
+│   ├── templates
+│   │   ├── accueil.html
+│   │   ├── caisse
+│   │   │   ├── accueil.html
+│   │   │   ├── confirmation_vente.html
+│   │   │   ├── demande_approvisionnement.html
+│   │   │   ├── produits.html
+│   │   │   ├── retour.html
+│   │   │   ├── stock_central.html
+│   │   │   ├── stock_magasin.html
+│   │   │   └── vente.html
+│   │   └── menu.html
+│   ├── urls.py
+│   ├── venv
+│   │   ├── bin
+│   │   │   ├── Activate.ps1
+│   │   │   ├── activate
+│   │   │   ├── activate.csh
+│   │   │   ├── activate.fish
+│   │   │   ├── django-admin
+│   │   │   ├── gunicorn
+│   │   │   ├── normalizer
+│   │   │   ├── pip
+│   │   │   ├── pip3
+│   │   │   ├── pip3.12
+│   │   │   ├── python -> python3
+│   │   │   ├── python3 -> /usr/bin/python3
+│   │   │   ├── python3.12 -> python3
+│   │   │   └── sqlformat
+│   │   ├── include
+│   │   │   └── python3.12
+│   │   ├── lib
+│   │   │   └── python3.12
+│   │   │       └── site-packages
+│   │   ├── lib64 -> lib
+│   │   └── pyvenv.cfg
+│   ├── views.py
+│   └── wsgi.py
+├── test
+│   ├── 0-resultats1APISansCache
+│   │   ├── testConsultationSimultanée
+│   │   │   ├── ErreursEtSaturation.png
+│   │   │   ├── LatenceEtTrafic.png
+│   │   │   └── RapportK6.png
+│   │   └── testEnregistrementVentes
+│   │       ├── ErreursEtSaturation.png
+│   │       ├── LatenceEtTrafic.png
+│   │       └── RapportK6.png
+│   ├── 1-resultats1API
+│   │   ├── testConsultationSimultanée
+│   │   │   ├── ErreursEtSaturation.png
+│   │   │   ├── LatenceEtTrafic.png
+│   │   │   └── RapportK6.png
+│   │   └── testEnregistrementVentes
+│   │       ├── ErreursEtSaturation.png
+│   │       ├── LatenceEtTrafic.png
+│   │       └── RapportK6.png
+│   ├── 2-resultats2API
+│   │   ├── testConsultationSimultanée
+│   │   │   ├── ErreursEtSaturation.png
+│   │   │   ├── LatenceEtTrafic.png
+│   │   │   └── RapportK6.png
+│   │   └── testEnregistrementVentes
+│   │       ├── ErreursEtSaturation.png
+│   │       ├── LatenceEtTrafic.png
+│   │       └── RapportK6.png
+│   ├── 3-resultats3API
+│   │   ├── testConsultationSimultanée
+│   │   │   ├── ErreursEtSaturation.png
+│   │   │   ├── LatenceEtTrafic.png
+│   │   │   └── RapportK6.png
+│   │   └── testEnregistrementVentes
+│   │       ├── ErreursEtSaturation.png
+│   │       ├── LatenceEtTrafic.png
+│   │       └── RapportK6.png
+│   ├── 4-resultats4API
+│   │   ├── testConsultationSimultanée
+│   │   │   ├── ErreursEtSaturation.png
+│   │   │   ├── LatenceEtTrafic.png
+│   │   │   └── RapportK6.png
+│   │   └── testEnregistrementVentes
+│   │       ├── ErreursEtSaturation.png
+│   │       ├── LatenceEtTrafic.png
+│   │       └── RapportK6.png
+│   ├── 5-resultats5API
+│   │   ├── testConsultationSimultanée
+│   │   │   ├── ErreursEtSaturation.png
+│   │   │   ├── LatenceEtTrafic.png
+│   │   │   └── RapportK6.png
+│   │   └── testEnregistrementVentes
+│   │       ├── ErreursEtSaturation.png
+│   │       ├── LatenceEtTrafic.png
+│   │       └── RapportK6.png
+│   ├── rapportDeTest.md
+│   ├── rapportDeTest.pdf
+│   ├── tableauComparatif.png
+│   ├── testConsultationSimultanée.js
+│   └── testEnregistrementVentes.js
+├── tree.txt
+└── venv
+    ├── bin
+    │   ├── Activate.ps1
+    │   ├── activate
+    │   ├── activate.csh
+    │   ├── activate.fish
+    │   ├── django-admin
+    │   ├── gunicorn
+    │   ├── normalizer
+    │   ├── pip
+    │   ├── pip3
+    │   ├── pip3.12
+    │   ├── py.test
+    │   ├── pygmentize
+    │   ├── pytest
+    │   ├── python -> python3
+    │   ├── python3 -> /usr/bin/python3
+    │   ├── python3.12 -> python3
+    │   └── sqlformat
+    ├── include
+    │   └── python3.12
+    ├── lib
+    │   └── python3.12
+    │       └── site-packages
+    │           ├── PyYAML-6.0.2.dist-info
+    │           ├── __pycache__
+    │           ├── _pytest
+    │           ├── _yaml
+    │           ├── asgiref
+    │           ├── asgiref-3.8.1.dist-info
+    │           ├── certifi
+    │           ├── certifi-2025.7.14.dist-info
+    │           ├── charset_normalizer
+    │           ├── charset_normalizer-3.4.2.dist-info
+    │           ├── corsheaders
+    │           ├── debug_toolbar
+    │           ├── dj_database_url
+    │           ├── dj_database_url-3.0.0.dist-info
+    │           ├── django
+    │           ├── django-4.2.22.dist-info
+    │           ├── django_cors_headers-4.7.0.dist-info
+    │           ├── django_debug_toolbar-5.2.0.dist-info
+    │           ├── django_environ-0.12.0.dist-info
+    │           ├── django_extensions
+    │           ├── django_extensions-4.1.dist-info
+    │           ├── django_prometheus
+    │           ├── django_prometheus-2.4.1.dist-info
+    │           ├── django_redis
+    │           ├── django_redis-6.0.0.dist-info
+    │           ├── djangorestframework-3.16.0.dist-info
+    │           ├── drf_yasg
+    │           ├── drf_yasg-1.21.10.dist-info
+    │           ├── environ
+    │           ├── gunicorn
+    │           ├── gunicorn-23.0.0.dist-info
+    │           ├── idna
+    │           ├── idna-3.10.dist-info
+    │           ├── inflection
+    │           ├── inflection-0.5.1.dist-info
+    │           ├── inflection.py
+    │           ├── iniconfig
+    │           ├── iniconfig-2.1.0.dist-info
+    │           ├── packaging
+    │           ├── packaging-25.0.dist-info
+    │           ├── pip
+    │           ├── pip-24.0.dist-info
+    │           ├── pluggy
+    │           ├── pluggy-1.6.0.dist-info
+    │           ├── prometheus_client
+    │           ├── prometheus_client-0.22.1.dist-info
+    │           ├── psycopg2
+    │           ├── psycopg2_binary-2.9.10.dist-info
+    │           ├── psycopg2_binary.libs
+    │           ├── py.py
+    │           ├── pygments
+    │           ├── pygments-2.19.2.dist-info
+    │           ├── pytest
+    │           ├── pytest-8.4.1.dist-info
+    │           ├── pytz
+    │           ├── pytz-2025.2.dist-info
+    │           ├── redis
+    │           ├── redis-6.2.0.dist-info
+    │           ├── requests
+    │           ├── requests-2.32.4.dist-info
+    │           ├── rest_framework
+    │           ├── sqlparse
+    │           ├── sqlparse-0.5.3.dist-info
+    │           ├── typing_extensions-4.14.0.dist-info
+    │           ├── typing_extensions.py
+    │           ├── uritemplate
+    │           ├── uritemplate-4.2.0.dist-info
+    │           ├── urllib3
+    │           ├── urllib3-2.5.0.dist-info
+    │           └── yaml
+    ├── lib64 -> lib
+    └── pyvenv.cfg
+
+152 directories, 194 files

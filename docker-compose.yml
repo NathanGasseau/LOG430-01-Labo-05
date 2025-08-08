@@ -1,36 +1,125 @@
-version: '3.9'
-
 services:
-  db:
-    image: postgres:16
-    restart: always
+  # db:
+  #   image: postgres:16
+  #   restart: always
+  #   environment:
+  #     POSTGRES_DB: sgc_db
+  #     POSTGRES_USER: sgc_user
+  #     POSTGRES_PASSWORD: sgc_pass
+  #     POSTGRES_INITDB_ARGS: "--auth-host=md5"
+  #   command: postgres -c password_encryption=md5
+  #   ports:
+  #     - "5433:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U sgc_user -d sgc_db"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - monitoring
+
+  db_stock:
+    image: postgres:15
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     environment:
       POSTGRES_DB: sgc_db
       POSTGRES_USER: sgc_user
       POSTGRES_PASSWORD: sgc_pass
-      POSTGRES_INITDB_ARGS: "--auth-host=md5"
-    command: postgres -c password_encryption=md5
+      POSTGRES_INITDB_ARGS: "--auth-host=md5 --auth-local=md5"
+    volumes:
+      - stock_db_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sgc_user -d sgc_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
     networks:
       - monitoring
+
+  stock-service:
+    build: ./sgc/microservices/stock_service
+    ports:
+      - "8001:8000"
+    depends_on:
+      db_stock:
+          condition: service_healthy
+    command: >
+        sh -c "
+        echo '✅ DB is ready, applying migrations...' &&
+        python manage.py migrate &&
+        echo '🌱 Running seed data...' &&
+        python manage.py runscript seed_data &&
+        echo '🚀 Starting frontend server only...' &&
+        python manage.py runserver 0.0.0.0:8000 --skip-checks
+        "
+    environment:
+      POSTGRES_DB: sgc_db
+      POSTGRES_USER: sgc_user
+      POSTGRES_PASSWORD: sgc_pass
+      DB_HOST: db_stock
+      DB_PORT: 5432
+    networks:
+      - monitoring
+
+  # # 🔁 Même chose pour vente_service
+  # db_vente:
+  #   image: postgres:15
+  #   environment:
+  #     POSTGRES_DB: ventedb
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #   volumes:
+  #     - vente_db_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5434:5432"
+
+  # vente-service:
+  #   build: ./sgc/microservices/vente_service
+  #   ports:
+  #     - "8002:8000"
+  #   depends_on:
+  #     - db_vente
+  #   environment:
+  #     POSTGRES_DB: sgc_db
+  #     POSTGRES_USER: sgc_user
+  #     POSTGRES_PASSWORD: sgc_pass
+  #     POSTGRES_INITDB_ARGS: "--auth-host=md5"
+  #     DB_HOST: db_vente
+  #     DB_PORT: 5432
+
+  kong:
+    image: kong:3.6
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /app/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+    ports:
+      - "8005:8000"  # HTTP proxy port
+      - "8006:8001"  # Admin API port
+    volumes:
+      - ./kong.yml:/app/kong.yml
+    depends_on:
+      - stock-service
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   pgbouncer:
     image: edoburu/pgbouncer
     restart: always
-    ports:
-      - "6432:6432"
     depends_on:
-      - db
+      db_stock:
+        condition: service_healthy
     environment:
-      DB_HOST: db
+      DB_HOST: db_stock
       DB_PORT: 5432
       DB_USER: sgc_user
       DB_PASSWORD: sgc_pass
@@ -47,10 +136,6 @@ services:
       sh -c "
       echo '🕐 Waiting for DB...' &&
       until pg_isready -h pgbouncer -p 5432 -U sgc_user; do sleep 1; done &&
-      echo '✅ DB is ready, applying migrations...' &&
-      python manage.py migrate &&
-      echo '🌱 Running seed data...' &&
-      python manage.py runscript seed_data &&
       echo '🚀 Starting frontend server only...' &&
       python manage.py runserver 0.0.0.0:8000 --skip-checks
       "
@@ -59,7 +144,7 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      db:
+      db_stock:
         condition: service_healthy
       pgbouncer:
         condition: service_started
@@ -70,116 +155,116 @@ services:
     networks:
       - monitoring
 
-  api1:
-    build: .
-    command: gunicorn api.wsgi:application --bind 0.0.0.0:8001
-    expose:
-      - "8001"
-    depends_on:
-      db:
-        condition: service_healthy
-      pgbouncer:
-        condition: service_started
-    environment:
-      DJANGO_SETTINGS_MODULE: api.settings
-      DATABASE_URL: postgres://sgc_user:sgc_pass@pgbouncer:5432/sgc_db
-      PYTHONUNBUFFERED: 1
-    volumes:
-      - .:/app
-    networks:
-      - monitoring
+  # api1:
+  #   build: .
+  #   command: gunicorn api.wsgi:application --bind 0.0.0.0:8001
+  #   expose:
+  #     - "8001"
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     pgbouncer:
+  #       condition: service_started
+  #   environment:
+  #     DJANGO_SETTINGS_MODULE: api.settings
+  #     DATABASE_URL: postgres://sgc_user:sgc_pass@pgbouncer:5432/sgc_db
+  #     PYTHONUNBUFFERED: 1
+  #   volumes:
+  #     - .:/app
+  #   networks:
+  #     - monitoring
 
-  api2:
-    build: .
-    command: gunicorn api.wsgi:application --bind 0.0.0.0:8001
-    expose:
-      - "8001"
-    depends_on:
-      db:
-        condition: service_healthy
-      pgbouncer:
-        condition: service_started
-    environment:
-      DJANGO_SETTINGS_MODULE: api.settings
-      DATABASE_URL: postgres://sgc_user:sgc_pass@pgbouncer:5432/sgc_db
-      PYTHONUNBUFFERED: 1
-    volumes:
-      - .:/app
-    networks:
-      - monitoring
+  # api2:
+  #   build: .
+  #   command: gunicorn api.wsgi:application --bind 0.0.0.0:8001
+  #   expose:
+  #     - "8001"
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     pgbouncer:
+  #       condition: service_started
+  #   environment:
+  #     DJANGO_SETTINGS_MODULE: api.settings
+  #     DATABASE_URL: postgres://sgc_user:sgc_pass@pgbouncer:5432/sgc_db
+  #     PYTHONUNBUFFERED: 1
+  #   volumes:
+  #     - .:/app
+  #   networks:
+  #     - monitoring
 
-  api3:
-    build: .
-    command: gunicorn api.wsgi:application --bind 0.0.0.0:8001
-    expose:
-      - "8001"
-    depends_on:
-      db:
-        condition: service_healthy
-      pgbouncer:
-        condition: service_started
-    environment:
-      DJANGO_SETTINGS_MODULE: api.settings
-      DATABASE_URL: postgres://sgc_user:sgc_pass@pgbouncer:5432/sgc_db
-      PYTHONUNBUFFERED: 1
-    volumes:
-      - .:/app
-    networks:
-      - monitoring
+  # api3:
+  #   build: .
+  #   command: gunicorn api.wsgi:application --bind 0.0.0.0:8001
+  #   expose:
+  #     - "8001"
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     pgbouncer:
+  #       condition: service_started
+  #   environment:
+  #     DJANGO_SETTINGS_MODULE: api.settings
+  #     DATABASE_URL: postgres://sgc_user:sgc_pass@pgbouncer:5432/sgc_db
+  #     PYTHONUNBUFFERED: 1
+  #   volumes:
+  #     - .:/app
+  #   networks:
+  #     - monitoring
 
-  api4:
-    build: .
-    command: gunicorn api.wsgi:application --bind 0.0.0.0:8001
-    expose:
-      - "8001"
-    depends_on:
-      db:
-        condition: service_healthy
-      pgbouncer:
-        condition: service_started
-    environment:
-      DJANGO_SETTINGS_MODULE: api.settings
-      DATABASE_URL: postgres://sgc_user:sgc_pass@pgbouncer:5432/sgc_db
-      PYTHONUNBUFFERED: 1
-    volumes:
-      - .:/app
-    networks:
-      - monitoring
+  # api4:
+  #   build: .
+  #   command: gunicorn api.wsgi:application --bind 0.0.0.0:8001
+  #   expose:
+  #     - "8001"
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     pgbouncer:
+  #       condition: service_started
+  #   environment:
+  #     DJANGO_SETTINGS_MODULE: api.settings
+  #     DATABASE_URL: postgres://sgc_user:sgc_pass@pgbouncer:5432/sgc_db
+  #     PYTHONUNBUFFERED: 1
+  #   volumes:
+  #     - .:/app
+  #   networks:
+  #     - monitoring
 
-  api5:
-    build: .
-    command: gunicorn api.wsgi:application --bind 0.0.0.0:8001
-    expose:
-      - "8001"
-    depends_on:
-      db:
-        condition: service_healthy
-      pgbouncer:
-        condition: service_started
-    environment:
-      DJANGO_SETTINGS_MODULE: api.settings
-      DATABASE_URL: postgres://sgc_user:sgc_pass@pgbouncer:5432/sgc_db
-      PYTHONUNBUFFERED: 1
-    volumes:
-      - .:/app
-    networks:
-      - monitoring
+  # api5:
+  #   build: .
+  #   command: gunicorn api.wsgi:application --bind 0.0.0.0:8001
+  #   expose:
+  #     - "8001"
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     pgbouncer:
+  #       condition: service_started
+  #   environment:
+  #     DJANGO_SETTINGS_MODULE: api.settings
+  #     DATABASE_URL: postgres://sgc_user:sgc_pass@pgbouncer:5432/sgc_db
+  #     PYTHONUNBUFFERED: 1
+  #   volumes:
+  #     - .:/app
+  #   networks:
+  #     - monitoring
 
-  nginx:
-    image: nginx:latest
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    ports:
-      - "80:80"
-    depends_on:
-      - api1
-      # - api2
-      # - api3
-      # - api4
-      # - api5
-      - web
-    networks:
-      - monitoring
+  # nginx:
+  #   image: nginx:latest
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #   ports:
+  #     - "80:80"
+  #   depends_on:
+  #     - api1
+  #     # - api2
+  #     # - api3
+  #     # - api4
+  #     # - api5s
+  #     - web
+  #   networks:
+  #     - monitoring
 
   redis:
     image: redis:latest
@@ -238,6 +323,8 @@ services:
 volumes:
   postgres_data:
   grafana_data:
+  stock_db_data:
+  vente_db_data:
 
 networks:
   monitoring:

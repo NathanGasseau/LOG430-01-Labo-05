@@ -1,0 +1,9 @@
+_format_version: "3.0"
+
+services:
+  - name: stock-service
+    url: http://stock-service:8000 
+    routes:
+      - name: stock-service-route
+        paths:
+          - /stockService

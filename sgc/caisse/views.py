@@ -1,8 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.conf import settings
-from sgc.service_factory import get_caisse_service
-from sgc.core.models import LigneVente, Magasin
 from django.conf import settings
 import requests
 
@@ -24,7 +22,7 @@ def vue_rechercher_produit(request):
             headers = {
                 "Authorization": f"Token {settings.API_TOKEN}"
             }
-            response = requests.get(f"{settings.API_BASE_URL}/api/v1/produits/recherche/", params=criteria_filtrés, headers=headers)
+            response = requests.get(f"{settings.API_BASE_URL}/stockService/recherche/", params=criteria_filtrés, headers=headers)
             if response.status_code == 200:
                 produits = response.json()
             else:
